@@ -1,0 +1,10 @@
+drop col: CustomerID1 action: Drop
+drop col: OrderID1 action: Drop
+splitpatterns col: OrderDate type: on on: '\/' limit: 2
+splitpatterns col: OrderDate3 type: on on: ' '
+drop col: OrderDate2 action: Drop
+drop col: OrderDate5 action: Drop
+rename type: manual mapping: [OrderDate1,'OrderMonth']
+rename type: manual mapping: [OrderDate4,'OrderYear']
+lookup with: FiscalQtr.csv - Lookup col: current_dataset.OrderMonth key: FiscalQtr.csv - Lookup.column2
+rename type: manual mapping: [column3,'FiscalQtr']
