@@ -1,5 +1,4 @@
 -- Reduce Full Timestamp to Quarterly Stamp
-
 derive type: 
   single 
 value: 
