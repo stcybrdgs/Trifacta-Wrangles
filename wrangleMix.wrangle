@@ -1,0 +1,12 @@
+-- Reduce Full Timestamp to Quarterly Stamp
+
+derive type: 
+  single 
+value: 
+  CASE([
+  AND(Month >= 1, Month <= 3), '1', 
+  AND(Month >= 4, Month <= 6), '2', 
+  AND(Month >= 7, Month <= 9), '3', 
+  AND(Month >= 10, Month <= 12), '4']) 
+as: 
+  'Qtr'

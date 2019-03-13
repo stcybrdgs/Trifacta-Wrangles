@@ -1,0 +1,6 @@
+join with: OrderDetails col: CustomerID = current_dataset.CustomerID,OrderDate = current_dataset.OrderDate,UnitPrice = OrderDetails.UnitPrice,Quantity = OrderDetails.Quantity row: current_dataset.OrderID == OrderDetails.OrderID type: inner
+derive type: single value: MONTH(OrderDate) as: 'month_OrderDate'
+derive type: single value: YEAR(OrderDate) as: 'year_OrderDate'
+rename type: manual mapping: [year_OrderDate,'Year']
+rename type: manual mapping: [month_OrderDate,'Month']
+derive type: single value: CASE([AND(Month >= 1, Month <= 3), '1', AND(Month >= 4, Month <= 6), '2', AND(Month >= 7, Month <= 9), '3', AND(Month >= 10, Month <= 12), '4']) as: 'Qtr'
