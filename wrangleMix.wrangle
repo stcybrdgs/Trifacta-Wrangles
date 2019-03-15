@@ -1,3 +1,4 @@
+-- WRANGLE EX 1
 -- Reduce Full Timestamp to Quarterly Stamp
 derive type: 
   single 
@@ -9,3 +10,92 @@ value:
   AND(Month >= 10, Month <= 12), '4']) 
 as: 
   'Qtr'
+
+
+-- WRANGLE EX 2
+-- Insert Qtr column and Year Column into table
+drop col: CustomerID1 
+action: Drop
+drop col: OrderID1 
+action: Drop
+splitpatterns col: OrderDate 
+type: on on: '\/' limit: 2
+splitpatterns col: OrderDate3 
+type: on on: ' '
+drop col: OrderDate2 
+action: Drop
+drop col: OrderDate5 
+action: Drop
+rename type: manual 
+mapping: [OrderDate1,'OrderMonth']
+rename type: manual 
+mapping: [OrderDate4,'OrderYear']
+lookup with: FiscalQtr.csv - Lookup col: current_dataset.OrderMonth 
+key: FiscalQtr.csv - Lookup.column2
+rename type: manual 
+mapping: [column3,'FiscalQtr']
+
+
+-- WRANGLE EX 3
+-- Join Order table with OrderDetails table
+-- and add columns to break timestamps into 
+-- Year, Month, and Quarter
+join with: OrderDetails 
+col: CustomerID = current_dataset.CustomerID,
+     OrderDate = current_dataset.OrderDate,
+     UnitPrice = OrderDetails.UnitPrice,
+     Quantity = OrderDetails.Quantity 
+row: current_dataset.OrderID == OrderDetails.OrderID 
+type: inner
+derive type: single 
+value: MONTH(OrderDate) as: 'month_OrderDate'
+derive type: single 
+value: YEAR(OrderDate) as: 'year_OrderDate'
+rename type: manual 
+mapping: [year_OrderDate,'Year']
+rename type: manual 
+mapping: [month_OrderDate,'Month']
+derive type: single 
+value: 
+     CASE([
+       AND(Month >= 1, Month <= 3), '1', 
+       AND(Month >= 4, Month <= 6), '2', 
+       AND(Month >= 7, Month <= 9), '3', 
+       AND(Month >= 10, Month <= 12), '4'
+     ]) 
+as: 'Qtr'
+
+
+-- WRANGLE EX 4
+-- Join OrderDetails table with Products table
+join with: bc_Products 
+col: ProductID = current_dataset.ProductID, 
+     ProductID1 = bc_Products.ProductID, 
+     OrderID = current_dataset.OrderID, 
+     UnitPrice = current_dataset.UnitPrice, 
+     Quantity = current_dataset.Quantity, 
+     Discount = current_dataset.Discount, 
+     ProductName = bc_Products.ProductName, 
+     UnitPrice1 = bc_Products.UnitPrice 
+row: current_dataset.ProductID == bc_Products.ProductID 
+type: inner
+
+
+-- WRANGLE EX 5
+-- Join Order table with Customers table
+join with: bc_Customers 
+col: CustomerID = current_dataset.CustomerID, 
+	 CustomerID1 = bc_Customers.CustomerID, 
+	 OrderID = current_dataset.OrderID, 
+	 EmployeeID = current_dataset.EmployeeID, 
+	 OrderDate = current_dataset.OrderDate, 
+	 ShipCity = current_dataset.ShipCity, 
+	 ShipRegion = current_dataset.ShipRegion, 
+	 ShipPostalCode = current_dataset.ShipPostalCode, 
+	 ShipCountry = current_dataset.ShipCountry, 
+	 CompanyName = bc_Customers.CompanyName, 
+	 Region = bc_Customers.Region, 
+	 PostalCode = bc_Customers.PostalCode, 
+	 Country = bc_Customers.Country 
+row: current_dataset.CustomerID == bc_Customers.CustomerID 
+type: inner
