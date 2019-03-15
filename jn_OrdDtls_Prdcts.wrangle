@@ -1,5 +1,0 @@
-join with: bc_Products col: ProductID = current_dataset.ProductID, ProductID1 = bc_Products.ProductID, 
-OrderID = current_dataset.OrderID, UnitPrice = current_dataset.UnitPrice, 
-Quantity = current_dataset.Quantity, Discount = current_dataset.Discount, 
-ProductName = bc_Products.ProductName, UnitPrice1 = bc_Products.UnitPrice 
-row: current_dataset.ProductID == bc_Products.ProductID type: inner
