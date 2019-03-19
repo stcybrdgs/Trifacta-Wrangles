@@ -99,3 +99,21 @@ col: CustomerID = current_dataset.CustomerID,
 	 Country = bc_Customers.Country 
 row: current_dataset.CustomerID == bc_Customers.CustomerID 
 type: inner
+
+
+-- WRANGLE EX 6
+-- Clean up Customers table using lookups
+settype col: 
+PostalCode type: String
+textformat col: City t
+ype: propercase
+//Need a col of US States in order to create logic for inferring Region designations
+lookup with: Lkup_US_City_to_State.csv 
+col: current_dataset.City 
+key: Lkup_US_City_to_State.csv.City
+rename type: manual 
+mapping: [StateAbr,'USA_State']
+//Region Logic: IF Region IS NULL THEN USA Region = USA State and non-USA Region = City
+derive type: single 
+value: IF(AND(ISNULL(Region), OR('USA', 'US')), USA_State, City) 
+as: 'column1'
