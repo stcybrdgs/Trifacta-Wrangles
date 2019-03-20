@@ -6,22 +6,23 @@ USE Northwind;
 IF EXISTS (SELECT * FROM Orders_OrderDetails) DROP TABLE Order_OrderDetails;
 
 -- Create table View joining Orders and OrderDetails
-CREATE VIEW Ordrs_OrdrDtls 
+CREATE VIEW Ordrs_OrdrDtls2 
 AS
 SELECT o.OrderID as OrderID,
        o.CustomerID as CustomerID,
 	   o.OrderDate as OrderDate,
 	   od.UnitPrice as UnitPrice, 
 	   od.Quantity as Quantity,
-	   od.Discount as Discount
+	   ROUND(od.Discount, 2) as Discount
 FROM Orders as o
 JOIN [Order Details] as od
 on o.OrderID = od.OrderID; 	  
 
 -- Look at new View to confirm structure and contents
-SELECT TOP 5 * FROM Ordrs_OrdrDtls;
+SELECT TOP 15 * FROM Ordrs_OrdrDtls;
 
--- 
+-- JOIN Orders to [Order Details]
+SELECT o.CustomerID as CustomerID,
        FORMAT(o.OrderDate, 'yyyy') as OrderYear,
        CASE 
 	       WHEN FORMAT(o.OrderDate, 'MM') in (1,2,3) THEN 'Q1'
@@ -43,5 +44,3 @@ GROUP BY o.CustomerID,
 	     END
 ORDER BY TotalPurchase DESC;
 
-USE Northwind;
-SELECT TOP 10 * FROM CreditCardDetails;
