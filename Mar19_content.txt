@@ -1,5 +1,0 @@
-CASE([
-AND( Region == '', Country == 'USA' ), state_id,
-AND( Region == '', Country != 'USA' ), City, 
-Region != '', Region
-])
