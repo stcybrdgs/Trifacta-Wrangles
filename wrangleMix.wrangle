@@ -1,41 +1,54 @@
+---------------
 -- WRANGLE EX 1
 -- Reduce Full Timestamp to Quarterly Stamp
-derive type: 
-  single 
+derive type: single 
 value: 
   CASE([
   AND(Month >= 1, Month <= 3), '1', 
   AND(Month >= 4, Month <= 6), '2', 
   AND(Month >= 7, Month <= 9), '3', 
   AND(Month >= 10, Month <= 12), '4']) 
-as: 
-  'Qtr'
+as: 'Qtr'
 
 
+---------------
 -- WRANGLE EX 2
 -- Insert Qtr column and Year Column into table
 drop col: CustomerID1 
 action: Drop
+
 drop col: OrderID1 
 action: Drop
+
 splitpatterns col: OrderDate 
-type: on on: '\/' limit: 2
+type: on 
+on: '\/' 
+limit: 2
+
 splitpatterns col: OrderDate3 
-type: on on: ' '
+type: on 
+on: ' '
+
 drop col: OrderDate2 
 action: Drop
+
 drop col: OrderDate5 
 action: Drop
+
 rename type: manual 
 mapping: [OrderDate1,'OrderMonth']
+
 rename type: manual 
 mapping: [OrderDate4,'OrderYear']
+
 lookup with: FiscalQtr.csv - Lookup col: current_dataset.OrderMonth 
 key: FiscalQtr.csv - Lookup.column2
+
 rename type: manual 
 mapping: [column3,'FiscalQtr']
 
 
+---------------
 -- WRANGLE EX 3
 -- Join Order table with OrderDetails table
 -- and add columns to break timestamps into 
@@ -47,14 +60,21 @@ col: CustomerID = current_dataset.CustomerID,
      Quantity = OrderDetails.Quantity 
 row: current_dataset.OrderID == OrderDetails.OrderID 
 type: inner
+
 derive type: single 
-value: MONTH(OrderDate) as: 'month_OrderDate'
+value: MONTH(OrderDate) 
+as: 'month_OrderDate'
+
 derive type: single 
-value: YEAR(OrderDate) as: 'year_OrderDate'
+value: YEAR(OrderDate) 
+as: 'year_OrderDate'
+
 rename type: manual 
 mapping: [year_OrderDate,'Year']
+
 rename type: manual 
 mapping: [month_OrderDate,'Month']
+
 derive type: single 
 value: 
  CASE([
@@ -66,6 +86,7 @@ value:
 as: 'Qtr'
 
 
+---------------
 -- WRANGLE EX 4
 -- Join OrderDetails table with Products table
 join with: bc_Products 
@@ -81,6 +102,7 @@ row: current_dataset.ProductID == bc_Products.ProductID
 type: inner
 
 
+---------------
 -- WRANGLE EX 5
 -- Join Order table with Customers table
 join with: bc_Customers 
@@ -101,31 +123,58 @@ row: current_dataset.CustomerID == bc_Customers.CustomerID
 type: inner
 
 
+---------------
 -- WRANGLE EX 6
 -- Clean up Customers table using lookups
 settype col: 
 PostalCode type: String
 textformat col: City 
 type: propercase
+
 //Need a col of US States in order to create logic for inferring Region designations
 lookup with: Lkup_US_City_to_State.csv 
 col: current_dataset.City 
 key: Lkup_US_City_to_State.csv.City
 rename type: manual 
 mapping: [StateAbr,'USA_State']
+
 //Region Logic: IF Region IS NULL THEN USA Region = USA State and non-USA Region = City
 derive type: single 
 value: IF(AND(ISNULL(Region), OR('USA', 'US')), USA_State, City) 
 as: 'column1'
 
 
+---------------
 -- WRANGLE EX 7
 -- Create logic for determining Customer Size
 -- per sales quarter in price data set
-value:
- CASE([
-  AND(AggTotPurchase >= 0, AggTotPurchase < TotSold * 0.25), 4, 
-  AND(AggTotPurchase >= TotSold * 0.25, AggTotPurchase < TotSold * 0.50), 3, 
-  AND(AggTotPurchase >= TotSold * 0.50, AggTotPurchase < TotSold * 0.75), 2, 
-  AND(AggTotPurchase >= TotSold * 0.75, AggTotPurchase <= TotSold * 1.0), 1
- ])
+derive type: single 
+value: ROUND(MULTIPLY(DIVIDE(TotQtrPurchase, TotQtrSales), 100), 2) 
+as: 'PercentQtrSales'
+
+derive type: multiple 
+value: MIN(PercentQtrSales) 
+group: Year,Qtr 
+as: 'Min%OfSalesInQtr'
+
+derive type: multiple 
+value: MAX(PercentQtrSales) 
+as: 'Max%SalesInQtr'
+
+move col: {Max%SalesInQtr} 
+position: after 
+after: {Min%OfSalesInQtr}
+
+derive type: single 
+value: 
+  CASE([
+	AND(PercentQtrSales >= {Min%OfSalesInQtr}, PercentQtrSales < (({Max%SalesInQtr} - {Min%OfSalesInQtr}) * 0.25)), 4, 
+	AND(PercentQtrSales >= (({Max%SalesInQtr} - {Min%OfSalesInQtr}) * 0.25), PercentQtrSales < (({Max%SalesInQtr} - {Min%OfSalesInQtr}) * 0.5)), 3, 
+	AND(PercentQtrSales >= (({Max%SalesInQtr} - {Min%OfSalesInQtr}) * 0.5), PercentQtrSales < (({Max%SalesInQtr} - {Min%OfSalesInQtr}) * 0.75)), 2, 
+	AND(PercentQtrSales >= (({Max%SalesInQtr} - {Min%OfSalesInQtr}) * 0.75), PercentQtrSales <= {Max%SalesInQtr}), 1
+  ]) 
+as: 'CustSizeByQtr'
+
+sort order: CustSizeByQtr
+sort order: -CustSizeByQtr
+sort order: CustSizeByQtr
