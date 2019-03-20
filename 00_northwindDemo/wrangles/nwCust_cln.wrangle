@@ -1,0 +1,14 @@
+settype col: PostalCode type: String
+textformat col: City type: propercase
+//Need a col of US States in order to create logic for inferring Region designations
+derive type: single value: IF(Country == 'USA', PostalCode, '') as: 'US_PostalCode'
+//Delete Step:
+Keep rows  where Country is 'USA'
+lookup with: Lkup_US_Zips.csv col: MISSING.US_PostalCode key: Lkup_US_Zips.csv.zip
+//Region Logic: IF Region IS NULL THEN USA Region = USA State and non-USA Region = City
+derive type: single value: CASE([AND(Region == '', Country == 'USA'), state_id, AND(Region == '', Country != 'USA'), City, Region != '', Region]) as: 'newRegion'
+//REM: After filling in new Region values, delete extra cols and rename new Region column
+drop col: US_PostalCode,city1,state_id action: Drop
+drop col: state_name action: Drop
+drop col: Region action: Drop
+rename type: manual mapping: [newRegion,'Region']

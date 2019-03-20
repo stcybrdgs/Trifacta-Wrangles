@@ -1,0 +1,146 @@
+Make a Presentation in PPT
+also make web-based ppt:
+ - you can use CSS animations or jQuery to mimic slide show
+ - use Boostrap accordion feature
+
+For this demo, Northwind is our customer. They are a retail company that. . . lalalal
+
+For our demo scenario, they have asked for us to transform data sets from this db setup:
+show img
+
+This is our subset:
+show img (Customers, Products, Orders, OrderDetails)
+
+Their deliverables indclude:
+Raw Stage: 
+ - Basic clean of all 4 db files
+       includes lookups for Country, State, and Region
+Refined:
+ - inferred data: 
+     Total $ Purchased
+     Qtr
+     Customer Size
+     Product Velocity
+
+Production:
+ - exec summary of running annual customer size for past X years
+
+Trifacta is being used.
+It's enterprise tool is being used for WX best practices for common wrangling workflow.
+
+"
+Let's look at the tool. You can see the Trifacta is pretty simple and includes:
+- import
+- workflow
+- jobs
+
+You can see in the workflow that I already have some data in here, and in the library, you can see where the data has come from.
+I've already done basic cleanse for 
+  Customers
+  Products
+  Order Details
+
+For this demo, we'll walk through the same cleansing method to transform the Orders table.
+
+I previously clicked on import Orders, and you can see it is now loaded and I can access it from the workflow.
+
+One of the first things we do is profile our data (click profile for Orders, and then go look at an existing profile while the job runs), and you can see
+we already have some profiles run for the other tables, so lets go look at one. The features included in the profile include:
+ - histograms
+ - unique values
+ - missing values
+ - mismatches
+ - data distribution
+
+We like to profile at the beginning of each wrangle bc it gives an easy way to compare to initial inputs to show how transformation has changed data during the wrangling process.
+The pre- and post- profiles can then be shared with customers via our enterprise-level tool (check that this statement is true).
+
+
+RAW STAGE
+Looking back at our checklist, the raw stage of wrangling typically includes the following basic activities:
+- delete empty cols
+- align data with schema (intro target tables
+  here, introduce the target table
+- Address NULLs (fill in the Region)
+  - to fill in the region, introduce the City to State lookup
+  - set international regions to city and USA regions to state 
+
+One of the nice things about trifacta is that I can make a linked reference from one workflow to another, which allows changes to cascade from one flow to another anytime a source doc is replaced.
+This may not be a good thing, because it could break something in the inheriting flow, so it is always good to test such chaining, which we have in this case. However, another good thing is that 
+anytime such a flow is broken, you can replace the reference doc with a hard output instead of a link to remove the dependency until you have time to check the validity of the link.
+
+
+REFINED STAGE
+- Join Orders to OrderDetails
+- Calculate TotPurchase and aggregate
+- Break out YR, QTR
+- Infer Cust Size and aggregate it
+- Infer Product Velocity (Sprint II)
+
+Now, to calculate the info needed for the refined stage, we need to join Order to OrderDetails, so let me show you how easy it is to join tables in Trifacta.
+
+Now, I will introduce my CASE logic like a lego to get the QTR. . . this is another nice thing about Trifacta is that you can build recipes for known data that will be wrangled frequently such that you can swap the recipes in and out like legos. . . of course such activities need to be vetted, but the workflow aspect of Trifacta is one of its huge values, so once the setup is locked in, you can recycle recipes for any flows you've tested.--> a great way to 'expedite transformations' within a stable workflow
+
+So, I've got the sales info and the Qtr info, so lets bring this data down to another branch of the flow and calculate CustSize according to the following logic: 
+- bucket 1: 0-25%
+- bucket 2: 26-50%
+- bucket 3: 51-75%
+- bucket 4: 76-100%
+In this case, we can bring in another recipe lego.
+
+Next, we'll calculate Product Velocity (SPrint II).
+
+Next, lets do a linked reference for the version of the table that includes CustSIze, and we'll use it in the next flow, ie the Production Stage, to build a production report.
+
+PRODUCTION STAGE
+- Group Year, Customer, TotPurchase
+- Pivot the info:
+Year    |    CustomerID    |    QTR    |    TotPurchase    
+
+CLOSING COMMENTS
+We do an additional stage of validation after our flows are complete to confirm the transformations are thorough and accurate across the full data set for any sets larger than 10 MB. 
+Within Trifacta, we can support these validation activities while we are still building our recipes by taking various samples of the data to spot check our recipe across different cross sections of the data set.
+Outside trifacta, we use (Sprint II  or III):
+- VBA in Excel applying Trifacta recipes across the dataset
+- Python I/O applying Trifacta recipes across the dataset
+
+
+
+=================================================================================
+ARTIFACTS
+PREP:
+FIGURE OUT WHAT THE FOLLOWING NEED TO LOOK LIKE 
+BEFORE BUILDING THEM IN TRIFACTA
+- Joined Orders = OrderDetails
+- TotPurchased
+- Quarters
+- Customer Size
+- Product Velocity (Put this one in Sprint II)
+- AnnualCustomerSize
+
+RAW INPUT
+- CSVs: Customers, Orders, OrderDetails, Products
+- Orders target schema
+- LOOKUPS: State Abbr, Country Abbr
+
+RAW OUTPUT
+- Cleaned CSVs and Profiles for: Customers, Orders, OrderDetails, Products
+
+REFINED INPUT
+- Reference to final Raw Stage versin of OrderDetails 
+- Reference to final Raw Stage version of Products 
+
+REFINED OUTPUT 
+- Orders=OrderDetails w/ TotPurchase, Yr, Qtr, Cust Size
+- Orders=OrderDetails w/Product Velocity (Sprint II)
+
+PRODUCTION INPUT
+- Reference to Refined version of Orders = OrderDetails
+
+PRODUCTION OUTPUT
+- AnnualCustomerSize
+
+"
+
+
+12:45
