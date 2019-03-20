@@ -57,12 +57,12 @@ rename type: manual
 mapping: [month_OrderDate,'Month']
 derive type: single 
 value: 
-     CASE([
-       AND(Month >= 1, Month <= 3), '1', 
-       AND(Month >= 4, Month <= 6), '2', 
-       AND(Month >= 7, Month <= 9), '3', 
-       AND(Month >= 10, Month <= 12), '4'
-     ]) 
+ CASE([
+   AND(Month >= 1, Month <= 3), '1', 
+   AND(Month >= 4, Month <= 6), '2', 
+   AND(Month >= 7, Month <= 9), '3', 
+   AND(Month >= 10, Month <= 12), '4'
+ ]) 
 as: 'Qtr'
 
 
@@ -105,8 +105,8 @@ type: inner
 -- Clean up Customers table using lookups
 settype col: 
 PostalCode type: String
-textformat col: City t
-ype: propercase
+textformat col: City 
+type: propercase
 //Need a col of US States in order to create logic for inferring Region designations
 lookup with: Lkup_US_City_to_State.csv 
 col: current_dataset.City 
@@ -117,3 +117,15 @@ mapping: [StateAbr,'USA_State']
 derive type: single 
 value: IF(AND(ISNULL(Region), OR('USA', 'US')), USA_State, City) 
 as: 'column1'
+
+
+-- WRANGLE EX 7
+-- Create logic for determining Customer Size
+-- per sales quarter in price data set
+value:
+ CASE([
+  AND(AggTotPurchase >= 0, AggTotPurchase < TotSold * 0.25), 4, 
+  AND(AggTotPurchase >= TotSold * 0.25, AggTotPurchase < TotSold * 0.50), 3, 
+  AND(AggTotPurchase >= TotSold * 0.50, AggTotPurchase < TotSold * 0.75), 2, 
+  AND(AggTotPurchase >= TotSold * 0.75, AggTotPurchase <= TotSold * 1.0), 1
+ ])
