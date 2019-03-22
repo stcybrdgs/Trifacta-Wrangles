@@ -69,13 +69,34 @@ One of the nice things about trifacta is that I can make a linked reference from
 This may not be a good thing, because it could break something in the inheriting flow, so it is always good to test such chaining, which we have in this case. However, another good thing is that 
 anytime such a flow is broken, you can replace the reference doc with a hard output instead of a link to remove the dependency until you have time to check the validity of the link.
 
+Raw Stage ---------------------------
+Data Set
+Missing Columns
+Empty Columns
+Null Values
+Schema Comparisons
+Data Type Mismatches
+Unique Values vs. Duplicates
+Normalizing
 
-REFINED STAGE
+Refined Stage -------------------------
+Typical steps in Refined include:
 - Join Orders to OrderDetails
 - Calculate TotPurchase and aggregate
 - Break out YR, QTR
 - Infer Cust Size and aggregate it
 - Infer Product Velocity (Sprint II)
+
+Enrichments
+Calculations
+Statistics
+Inferred Attributes
+Data Joins and Unions
+
+Production Stage
+Polished data for automated downstream reporting
+Value adding reports
+
 
 Now, to calculate the info needed for the refined stage, we need to join Order to OrderDetails, so let me show you how easy it is to join tables in Trifacta.
 
