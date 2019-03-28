@@ -178,3 +178,28 @@ as: 'CustSizeByQtr'
 sort order: CustSizeByQtr
 sort order: -CustSizeByQtr
 sort order: CustSizeByQtr
+
+
+---------------
+-- WRANGLE EX 8
+splitpatterns col: Address 
+type: on 
+on: ',' 
+limit: 4
+settype col: Address4 
+type: String
+
+textformat col: Address5 
+type: uppercase
+
+textformat col: Address2,Address3,Address4,Address5 
+type: removewhitespace
+
+lookup with: Lkup_CountryCodes.csv 
+col: current_dataset.Address5 
+key: Lkup_CountryCodes.csv.column2
+settype col: Address4 
+type: String
+
+drop col: Address5 
+action: Drop
