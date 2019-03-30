@@ -224,6 +224,15 @@ derive type: single
 value: MONTH(DATE) 
 as: 'MONTH'
 
+-- !!!!!!!!!!!!!!!!
+-- use FLOOR to figure quarter breakout from date field
+-- compare to previous logic:
+--   CASE([
+--     Month <= 3, 1, Month >= 10, 4, 
+--     AND(Month >= 4, Month <= 6), 2, 
+--     AND(Month >= 7, Month <= 9), 3
+--   ])
+-- !!!!!!!!!!!!!!!!
 derive type: single 
 value: ADD(1, FLOOR((month - 1) / 3)) 
 as: 'QTR'
@@ -236,12 +245,14 @@ rename type: manual
 mapping: [window,'WOQ']
 
 window value: ROWNUMBER() 
-group: MONTH o
-rder: DATE
+group: MONTH 
+order: DATE
 
 rename type: manual 
 mapping: [window,'WOM']
 
+-- aggregate total sales for each month (rolling)
+-- over each year
 derive type: multiple 
 value: ROLLINGSUM(SALES, -1, 0) 
 group: MONTH 
@@ -251,7 +262,7 @@ as: 'rollingsum_SALES'
 rename type: manual 
 mapping: [rollingsum_SALES,'RollSales-Monthly']
 
--- aggregate sales for each week
+-- aggregate total sales for each week (rolling)
 -- over each quarter
 derive type: multiple 
 value: ROLLINGSUM(SALES, -1, 0) 
@@ -259,7 +270,7 @@ group: QTR
 order: $sourcerownumber 
 as: 'rollingsum_SALES'
 
--- aggregate sales for each quarter
+-- aggregate total sales for each quarter (rolling)
 -- over each year
 derive type: multiple 
 value: ROLLINGSUM(SALES, -1, 0) 
@@ -267,7 +278,7 @@ group: QTR
 order: $sourcerownumber 
 as: 'QTD'
 
--- aggregate average sales for each quarter
+-- aggregate average sales for each quarter (rolling)
 -- over each year
 sort order: DATE
 derive type: multiple 
