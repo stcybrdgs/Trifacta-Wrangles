@@ -259,12 +259,16 @@ group: QTR
 order: $sourcerownumber 
 as: 'rollingsum_SALES'
 
+-- aggregate sales for each quarter
+-- over each year
 derive type: multiple 
 value: ROLLINGSUM(SALES, -1, 0) 
 group: QTR 
 order: $sourcerownumber 
 as: 'QTD'
 
+-- aggregate average sales for each quarter
+-- over each year
 sort order: DATE
 derive type: multiple 
 value: ROUND(ROLLINGAVERAGE(SALES, -1, 0), 2) 
