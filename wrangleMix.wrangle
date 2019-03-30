@@ -203,3 +203,75 @@ type: String
 
 drop col: Address5 
 action: Drop
+
+
+---------------
+-- WRANGLE EX 9
+window value: ROWNUMBER() 
+order: DATE
+rename type: manual 
+mapping: [window,'ROW_ID']
+
+move col: ROW_ID 
+position: before 
+before: DATE
+
+derive type: single 
+value: YEAR(DATE) 
+as: 'YEAR'
+
+derive type: single 
+value: MONTH(DATE) 
+as: 'MONTH'
+
+derive type: single 
+value: ADD(1, FLOOR((month - 1) / 3)) 
+as: 'QTR'
+
+window value: ROWNUMBER() 
+group: QTR 
+order: DATE
+
+rename type: manual 
+mapping: [window,'WOQ']
+
+window value: ROWNUMBER() 
+group: MONTH o
+rder: DATE
+
+rename type: manual 
+mapping: [window,'WOM']
+
+derive type: multiple 
+value: ROLLINGSUM(SALES, -1, 0) 
+group: MONTH 
+order: $sourcerownumber 
+as: 'rollingsum_SALES'
+
+rename type: manual 
+mapping: [rollingsum_SALES,'RollSales-Monthly']
+
+-- aggregate sales for each week
+-- over each quarter
+derive type: multiple 
+value: ROLLINGSUM(SALES, -1, 0) 
+group: QTR 
+order: $sourcerownumber 
+as: 'rollingsum_SALES'
+
+derive type: multiple 
+value: ROLLINGSUM(SALES, -1, 0) 
+group: QTR 
+order: $sourcerownumber 
+as: 'QTD'
+
+sort order: DATE
+derive type: multiple 
+value: ROUND(ROLLINGAVERAGE(SALES, -1, 0), 2) 
+order: $sourcerownumber 
+as: 'avgWeekByQtr'
+
+move col: ROW_ID position: after after: WOM
+move col: MONTH,QTR,YEAR position: after after: ROW_ID
+move col: WOQ position: after after: DATE
+move col: QTD position: before before: avgWeekByQtr
