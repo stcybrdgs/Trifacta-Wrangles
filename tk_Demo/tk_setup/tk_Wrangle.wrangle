@@ -1,0 +1,53 @@
+-- tk_Wrangle
+-- scenarios:
+--    1. parse address column of Customers table to achieve first normal form
+--    2. align Customers table to target schema
+--    3. standardize CustomerID field in Customers table
+--    4. create CustomerID map to use as lookup for restoring relational integrity to linked tables
+
+splitpatterns col: Address 
+type: on 
+on: ',' 
+limit: 4
+
+textformat col: Address2,Address3,Address4,Address5 
+type: trimwhitespace
+
+settype col: Address4 
+type: String
+
+rename type: manual 
+mapping: [Address1,'Address'],[Address2,'City'],[Address3,'State'],
+         [Address4,'PostalCode'],[Address5,'CountryCode']
+drop col: State 
+action: Drop
+
+standardize artifactTable: MISSING 
+col: CustomerID 
+targetmappingId: 519
+deduplicate
+
+lookup with: Lkup_tk_CustomerID 
+col: current_dataset.CompanyName 
+key: Lkup_tk_CustomerID.column2
+
+drop col: CompanyName 
+action: Drop
+
+drop col: FirstName, LastName, Address, City, PostalCode, CountryCode, Region, Industry 
+action: Drop
+
+derive type: single 
+value: IF(CustomerID != column3, 1, 0) as: 'column1'
+filter type: exactly 
+col: column1 
+exactly: 1 
+action: Keep
+
+drop col: column1 
+action: Drop
+
+standardize artifactTable: MISSING 
+col: CustomerID 
+targetmappingId: 519
+deduplicate
