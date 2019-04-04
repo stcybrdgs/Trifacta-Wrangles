@@ -1,0 +1,49 @@
+-- Wrangle Orders and OrderDetails to obtain
+-- View of Recency Frequency for export to Tableau BI
+
+//join tables: Orders == OrderDetails
+join with: rfmvs_OrderDetails.csv col: OrderID = current_dataset.OrderID, CustomerID = current_dataset.CustomerID, OrderDate = current_dataset.OrderDate, UnitPrice = rfmvs_OrderDetails.csv.UnitPrice, Quantity = rfmvs_OrderDetails.csv.Quantity, Discount = rfmvs_OrderDetails.csv.Discount row: current_dataset.OrderID == rfmvs_OrderDetails.csv.OrderID type: inner
+settype col: OrderID type: String
+
+//get Line Item Revenue
+derive type: single value: ROUND(Discount, 2) as: 'Discount1'
+drop col: Discount action: Drop
+rename type: manual mapping: [Discount1,'Discount']
+derive type: single value: MULTIPLY(UnitPrice, Quantity) as: 'PriceXQty'
+derive type: single value: ROUND(SUBTRACT(PriceXQty, MULTIPLY(PriceXQty, Discount)), 2) as: 'LineItemRevenue'
+drop col: UnitPrice,Quantity,Discount,PriceXQty action: Drop
+
+//get Start Date of data and truncate to a 2-Yr time range
+derive type: multiple value: MAX(OrderDate) as: 'NewestDate'
+derive type: single value: DIVIDE(SUBTRACT(NewestDate, OrderDate), 86400000) as: 'NumDaysOld'
+filter type: lessThan col: NumDaysOld lessThan: 730 lessThanEqual: true action: Keep
+
+//get Total Revenue By CustomerID (based on 2-Yr range)
+derive type: multiple value: ROUND(SUM(LineItemRevenue), 2) group: CustomerID as: 'TotRevenueByCustomerID'
+
+//get Total Revenue (for 2-Yr range)
+derive type: multiple value: SUM(LineItemRevenue) as: 'TotRevenue'
+
+//get Percent of Total Revenue By CustomerID
+derive type: single value: ROUND(MULTIPLY(DIVIDE(TotRevenueByCustomerID, TotRevenue), 100), 2) as: '%TotRevByCustID'
+
+//get Last Order and create 'Months Since Last Order Bucket'
+derive type: multiple value: NEXT(OrderDate, 1) group: CustomerID order: OrderDate as: 'NextOrderDate'
+derive type: single value: IF(ISNULL(NextOrderDate), OrderDate, '') as: 'LastOrderDate'
+derive type: single value: ROUND(DIVIDE(SUBTRACT(NewestDate, LastOrderDate), 2592000000), 2) as: 'MoSinceLastOrder'
+derive type: single value: CASE([MoSinceLastOrder <= 1, '1', AND(MoSinceLastOrder > 1, MoSinceLastOrder <= 2), '2', AND(MoSinceLastOrder > 2, MoSinceLastOrder <= 3), '3', AND(MoSinceLastOrder > 3, MoSinceLastOrder <= 6), '4 to 6', AND(MoSinceLastOrder > 6, MoSinceLastOrder <= 10), '6 to 10', MoSinceLastOrder > 10, '10 or more']) as: 'MSLO_Bucket'
+
+//aggregate the MSLO Bucket
+derive type: multiple value: ANY(MSLO_Bucket) group: CustomerID as: 'MSLO'
+settype col: MSLO type: String
+
+//group records to get one record per OrderID
+groupby group: CustomerID, MSLO, TotRevenueByCustomerID, {%TotRevByCustID}, TotRevenue, OrderID type: agg
+
+//get Total Number of Customer Purchases
+derive type: multiple value: COUNT() group: CustomerID as: 'TotNumPuchByCustomerID'
+
+//group on CustomerID and delete OrderID to get final table
+groupby group: CustomerID, TotNumPuchByCustomerID, MSLO, TotRevenueByCustomerID, {%TotRevByCustID}, TotRevenue type: agg
+sort order: CustomerID
+rename type: manual mapping: [MSLO,'MoSinceLastOrdr']
