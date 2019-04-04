@@ -28,22 +28,56 @@ derive type: multiple value: SUM(LineItemRevenue) as: 'TotRevenue'
 derive type: single value: ROUND(MULTIPLY(DIVIDE(TotRevenueByCustomerID, TotRevenue), 100), 2) as: '%TotRevByCustID'
 
 //get Last Order and create 'Months Since Last Order Bucket'
-derive type: multiple value: NEXT(OrderDate, 1) group: CustomerID order: OrderDate as: 'NextOrderDate'
-derive type: single value: IF(ISNULL(NextOrderDate), OrderDate, '') as: 'LastOrderDate'
-derive type: single value: ROUND(DIVIDE(SUBTRACT(NewestDate, LastOrderDate), 2592000000), 2) as: 'MoSinceLastOrder'
-derive type: single value: CASE([MoSinceLastOrder <= 1, '1', AND(MoSinceLastOrder > 1, MoSinceLastOrder <= 2), '2', AND(MoSinceLastOrder > 2, MoSinceLastOrder <= 3), '3', AND(MoSinceLastOrder > 3, MoSinceLastOrder <= 6), '4 to 6', AND(MoSinceLastOrder > 6, MoSinceLastOrder <= 10), '6 to 10', MoSinceLastOrder > 10, '10 or more']) as: 'MSLO_Bucket'
+derive type: multiple 
+value: NEXT(OrderDate, 1) 
+group: CustomerID 
+order: OrderDate 
+as: 'NextOrderDate'
+
+derive type: single 
+value: IF(ISNULL(NextOrderDate), OrderDate, '') 
+as: 'LastOrderDate'
+
+derive type: single 
+value: ROUND(DIVIDE(SUBTRACT(NewestDate, LastOrderDate), 2592000000), 2) 
+as: 'MoSinceLastOrder'
+
+derive type: single 
+value: CASE([
+           MoSinceLastOrder <= 1, '1', 
+           AND(MoSinceLastOrder > 1, MoSinceLastOrder <= 2), '2', 
+           AND(MoSinceLastOrder > 2, MoSinceLastOrder <= 3), '3', 
+           AND(MoSinceLastOrder > 3, MoSinceLastOrder <= 6), '4 to 6', 
+           AND(MoSinceLastOrder > 6, MoSinceLastOrder <= 10), '6 to 10', 
+           MoSinceLastOrder > 10, '10 or more']) 
+as: 'MSLO_Bucket'
 
 //aggregate the MSLO Bucket
-derive type: multiple value: ANY(MSLO_Bucket) group: CustomerID as: 'MSLO'
-settype col: MSLO type: String
+derive type: multiple 
+value: ANY(MSLO_Bucket) 
+group: CustomerID 
+as: 'MSLO'
+settype col: MSLO 
+type: String
 
 //group records to get one record per OrderID
-groupby group: CustomerID, MSLO, TotRevenueByCustomerID, {%TotRevByCustID}, TotRevenue, OrderID type: agg
+groupby group: 
+    CustomerID, MSLO, TotRevenueByCustomerID, 
+    {%TotRevByCustID}, TotRevenue, OrderID 
+type: agg
 
 //get Total Number of Customer Purchases
-derive type: multiple value: COUNT() group: CustomerID as: 'TotNumPuchByCustomerID'
+derive type: multiple 
+value: COUNT() 
+group: CustomerID 
+as: 'TotNumPuchByCustomerID'
 
 //group on CustomerID and delete OrderID to get final table
-groupby group: CustomerID, TotNumPuchByCustomerID, MSLO, TotRevenueByCustomerID, {%TotRevByCustID}, TotRevenue type: agg
+groupby group: 
+    CustomerID, TotNumPuchByCustomerID, 
+    MSLO, TotRevenueByCustomerID, {%TotRevByCustID}, 
+    TotRevenue 
+type: agg
 sort order: CustomerID
-rename type: manual mapping: [MSLO,'MoSinceLastOrdr']
+rename type: manual 
+mapping: [MSLO,'MoSinceLastOrdr']
