@@ -1,0 +1,19 @@
+-- CYPHER examples
+
+MATCH (theater:Venue {name:'Theatre Royal'}),
+(newcastle:City {name:'Newcastle'}),
+(bard:Author {lastname:'Shakespeare'}),
+(newcastle)<-[:STREET|CITY*1..2]-(theater)
+<-[:VENUE]-()-[:PERFORMANCE_OF]->()
+-[:PRODUCTION_OF]->(play)<-[w:WROTE_PLAY]-(bard)
+WHERE w.year > 1608
+RETURN DISTINCT play.title AS play
+
+MATCH (theater:Venue {name:'Theatre Royal'}),
+(newcastle:City {name:'Newcastle'}),
+(bard:Author {lastname:'Shakespeare'}),
+(newcastle)<-[:STREET|CITY*1..2]-(theater)
+<-[:VENUE]-()-[p:PERFORMANCE_OF]->()
+-[:PRODUCTION_OF]->(play)<-[:WROTE_PLAY]-(bard)
+RETURN play.title AS play, count(p) AS performance_count
+ORDER BY performance_count DESC
