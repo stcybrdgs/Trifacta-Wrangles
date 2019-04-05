@@ -17,3 +17,9 @@ MATCH (theater:Venue {name:'Theatre Royal'}),
 -[:PRODUCTION_OF]->(play)<-[:WROTE_PLAY]-(bard)
 RETURN play.title AS play, count(p) AS performance_count
 ORDER BY performance_count DESC
+
+-- uses the collect function to produce a comma delimited list
+MATCH (bard:Author {lastname:'Shakespeare'})-[w:WROTE_PLAY]->(play)
+WITH play
+ORDER BY w.year DESC
+RETURN collect(play.title) AS plays
