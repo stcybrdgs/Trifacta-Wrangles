@@ -83,3 +83,16 @@ CREATE
 (ir)-[:KNOWS]->(js),
 (ir)-[:KNOWS]->(ally),
 (rvb)-[:KNOWS]->(ally)
+
+-- use recommendation pattern to find someone who knows how to surf
+MATCH (js:Person)-[:KNOWS]-()-[:KNOWS]-(surfer)
+WHERE js.name = "Johan" AND surfer.hobby = "surfing"
+RETURN DISTINCT surfer
+
+-- Understand how a query works by prepending EXPLAIN or PROFILE:
+-- (Neo4j lets you analyze how your query works via the dashboard's visual query plan)
+PROFILE MATCH (js:Person)-[:KNOWS]-()-[:KNOWS]-(surfer)
+WHERE js.name = "Johan" AND surfer.hobby = "surfing"
+RETURN DISTINCT surfer
+
+
