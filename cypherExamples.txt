@@ -49,3 +49,37 @@ CREATE (email_1:Email {id:'1', content:'Hi Charlie, ... Kind regards, Bob'}),
 (email_1)-[:CC]->(davina),
 (email_1)-[:CC]->(alice),
 (email_1)-[:BCC]->(edward)
+
+
+-- /////////////////////////////////////
+-- create a new node in neo4j
+CREATE (ee:Person { name: "Emil", from: "Sweden", klout: 99 })
+CREATE (ee:Person { name: "Joe", from: "Asia", klout: 99 })
+
+-- find the nodes
+MATCH (ee:Person) WHERE ee.name = "Emil" RETURN ee;
+MATCH (ee:Person) WHERE ee.klout = 99 RETURN ee;
+
+-- MATCH clause to specify a pattern of nodes and relationships
+-- (ee:Person) a single node pattern with label 'Person' which 
+-- will assign matches to the variable 'ee'
+-- WHERE clause to constrain the results
+-- ee.name = "Emil" compares name property to the value "Emil"
+-- RETURN clause used to request particular results
+
+-- you can use the CREATE clause to create many nodes and 
+-- relationships at once, ie:
+CREATE 
+-- nodes...
+(js:Person { name: "Johan", from: "Sweden", learn: "surfing" }),
+(ir:Person { name: "Ian", from: "England", title: "author" }),
+(rvb:Person { name: "Rik", from: "Belgium", pet: "Orval" }),
+(ally:Person { name: "Allison", from: "California", hobby: "surfing" }),
+-- relationships...
+(ee)-[:KNOWS {since: 2001}]->(js),
+(ee)-[:KNOWS {rating: 5}]->(ir),
+(js)-[:KNOWS]->(ir),
+(js)-[:KNOWS]->(rvb),
+(ir)-[:KNOWS]->(js),
+(ir)-[:KNOWS]->(ally),
+(rvb)-[:KNOWS]->(ally)
