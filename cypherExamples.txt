@@ -23,3 +23,29 @@ MATCH (bard:Author {lastname:'Shakespeare'})-[w:WROTE_PLAY]->(play)
 WITH play
 ORDER BY w.year DESC
 RETURN collect(play.title) AS plays
+
+-- create graph db to track email interactions
+CREATE (alice:User {username:'Alice'}),
+(bob:User {username:'Bob'}),
+(charlie:User {username:'Charlie'}),
+(davina:User {username:'Davina'}),
+(edward:User {username:'Edward'}),
+(alice)-[:ALIAS_OF]->(bob)
+
+-- add some relationships joining users through email threads
+MATCH (bob:User {username:'Bob'}),
+(charlie:User {username:'Charlie'}),
+(davina:User {username:'Davina'}),
+(edward:User {username:'Edward'})
+CREATE (bob)-[:EMAILED]->(charlie),
+(bob)-[:CC]->(davina),
+(bob)-[:BCC]->(edward)
+
+-- create a more detailed structure to place email at 
+-- center of graph of relationships
+CREATE (email_1:Email {id:'1', content:'Hi Charlie, ... Kind regards, Bob'}),
+(bob)-[:SENT]->(email_1),
+(email_1)-[:TO]->(charlie),
+(email_1)-[:CC]->(davina),
+(email_1)-[:CC]->(alice),
+(email_1)-[:BCC]->(edward)
