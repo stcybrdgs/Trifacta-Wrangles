@@ -1,4 +1,5 @@
--- CYPHER examples
+-- CYPHER 
+-- example code
 
 MATCH (theater:Venue {name:'Theatre Royal'}),
 (newcastle:City {name:'Newcastle'}),
@@ -84,6 +85,7 @@ CREATE
 (ir)-[:KNOWS]->(ally),
 (rvb)-[:KNOWS]->(ally)
 
+
 -- use recommendation pattern to find someone who knows how to surf
 MATCH (js:Person)-[:KNOWS]-()-[:KNOWS]-(surfer)
 WHERE js.name = "Johan" AND surfer.hobby = "surfing"
@@ -96,3 +98,13 @@ WHERE js.name = "Johan" AND surfer.hobby = "surfing"
 RETURN DISTINCT surfer
 
 
+-- /////////////////////////////////////
+-- Exploring the Movie database in Neo4j
+-- pull back movies from Movie db where movie was made between 1995 and 2000
+MATCH(n90s:Movie) WHERE n90s.released >= 1995 AND n90s.released < 2000 RETURN n90s.title
+
+-- find out when Halle Berry was born
+MATCH(bd:Person) WHERE bd.name = "Halle Berry" RETURN bd.born
+
+-- show all of the movies in the db that Tom Hanks acted in
+MATCH(tom{name:"Tom Hanks"}) -[:ACTED_IN]-> (tomsMovies) RETURN tom, tomsMovies
