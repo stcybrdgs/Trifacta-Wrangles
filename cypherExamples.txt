@@ -108,3 +108,27 @@ MATCH(bd:Person) WHERE bd.name = "Halle Berry" RETURN bd.born
 
 -- show all of the movies in the db that Tom Hanks acted in
 MATCH(tom{name:"Tom Hanks"}) -[:ACTED_IN]-> (tomsMovies) RETURN tom, tomsMovies
+
+-- who directed "Cloud Atlas"?
+MATCH (director)-[:DIRECTED]->(movie) WHERE movie.title = "Cloud Atlas"  RETURN movie, director
+
+-- who are Tom Hanks' co-actors?
+MATCH (tom{name:"Tom Hanks"})-[:ACTED_IN]->(movies)<-[:ACTED_IN]-(coActors) RETURN coActors.name
+
+-- who is associated with Cloud Atlas? How are they related to this Movie?
+MATCH(actor:Person)-[relationship]-(ca:Movie{title:"Cloud Atlas"}) RETURN ca, actor, Type(relationship)
+
+-- ibid v2 (same query but constrained in WHERE clause instead of Movie object)
+MATCH(ca)-[howRelated]-(people) WHERE ca.title="Cloud Atlas" RETURN ca, people, howRelated
+
+-- show me all movies and people 6 degrees or less removed from Kevin Bacon
+MATCH(kb:Person{name:"Kevin Bacon"})-[*1..6]-(everything) RETURN everything.name, everything.title
+
+-- use shortestPath() to return all items in the shortest path between Meg Ryan and Kevin Bacon
+MATCH path=shortestPath((kb:Person{name:"Kevin Bacon"})-[*]-(mr:Person{name:"Meg Ryan"})) RETURN path
+
+-- find coActors that Tom Hanks has not worked with
+MATCH(th:Person{name:"Tom Hanks"})-[:ACTED_IN]->(movie)<-[:ACTED_IN]-(coActor), (coActor)-[:ACTED_IN]->(movie2)<-[:ACTED_IN]-(cocoActor) WHERE NOT (th)-[:ACTED_IN]->()<-[:ACTED_IN]-(cocoActor) AND th <> cocoActor RETURN cocoActor.name AS Recommend, count(*) AS Strength ORDER BY Strength DESC
+
+-- find someone to introduce Tom Hanks to Tom Cruise
+MATCH(th:Person{name:"Tom Hanks"})-[:ACTED_IN]->(m1)<-[:ACTED_IN]-(coActor), (tc:Person{name:"Tom Cruise"})-[:ACTED_IN]->(m2)<-[:ACTED_IN]-(coActor) RETURN DISTINCT coActor
