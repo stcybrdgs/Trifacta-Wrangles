@@ -294,3 +294,26 @@ move col: ROW_ID position: after after: WOM
 move col: MONTH,QTR,YEAR position: after after: ROW_ID
 move col: WOQ position: after after: DATE
 move col: QTD position: before before: avgWeekByQtr
+
+
+---------------
+-- WRANGLE EX 10
+union with: RS Clean 
+mapping: 
+  {'as': 'Company', 'sources': current_dataset.Company,RS Clean.Company},
+  {'as': 'Product', 'sources': current_dataset.Product,RS Clean.Product},
+  {'as': 'Description', 'sources': current_dataset.Description,RS Clean.Description},
+  {'as': 'Price', 'sources': current_dataset.Price,RS Clean.Price}
+sort order: Company, Product
+sort order: Product, Company
+sort order: Product
+sort order: -Product
+sort order: Product
+derive type: multiple 
+value: PREV(Product, 1) order: Product as: 'prevProd'
+derive type: multiple value: NEXT(Product, 1) order: Product as: 'nextProd'
+derive type: single value: IF(nextProd == Product, 1, 0) as: 'match1'
+derive type: single value: IF(prevProd == Product, 1, 0) as: 'match2'
+move col: prevProd position: before before: nextProd
+derive type: single value: ADD(match1, match2) as: 'Matches'
+filter type: exactly col: Matches exactly: 1 action: Keep
