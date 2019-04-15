@@ -168,10 +168,14 @@ after: {Min%OfSalesInQtr}
 derive type: single 
 value: 
   CASE([
-	AND(PercentQtrSales >= {Min%OfSalesInQtr}, PercentQtrSales < (({Max%SalesInQtr} - {Min%OfSalesInQtr}) * 0.25)), 4, 
-	AND(PercentQtrSales >= (({Max%SalesInQtr} - {Min%OfSalesInQtr}) * 0.25), PercentQtrSales < (({Max%SalesInQtr} - {Min%OfSalesInQtr}) * 0.5)), 3, 
-	AND(PercentQtrSales >= (({Max%SalesInQtr} - {Min%OfSalesInQtr}) * 0.5), PercentQtrSales < (({Max%SalesInQtr} - {Min%OfSalesInQtr}) * 0.75)), 2, 
-	AND(PercentQtrSales >= (({Max%SalesInQtr} - {Min%OfSalesInQtr}) * 0.75), PercentQtrSales <= {Max%SalesInQtr}), 1
+	AND(PercentQtrSales >= {Min%OfSalesInQtr}, 
+      PercentQtrSales < (({Max%SalesInQtr} - {Min%OfSalesInQtr}) * 0.25)), 4, 
+	AND(PercentQtrSales >= (({Max%SalesInQtr} - {Min%OfSalesInQtr}) * 0.25), 
+      PercentQtrSales < (({Max%SalesInQtr} - {Min%OfSalesInQtr}) * 0.5)), 3, 
+	AND(PercentQtrSales >= (({Max%SalesInQtr} - {Min%OfSalesInQtr}) * 0.5), 
+      PercentQtrSales < (({Max%SalesInQtr} - {Min%OfSalesInQtr}) * 0.75)), 2, 
+	AND(PercentQtrSales >= (({Max%SalesInQtr} - {Min%OfSalesInQtr}) * 0.75), 
+      PercentQtrSales <= {Max%SalesInQtr}), 1
   ]) 
 as: 'CustSizeByQtr'
 
