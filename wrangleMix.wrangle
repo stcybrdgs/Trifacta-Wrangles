@@ -298,6 +298,9 @@ move col: QTD position: before before: avgWeekByQtr
 
 ---------------
 -- WRANGLE EX 10
+-- union scraped data sets from two online power tool catalogs
+-- and run product/price comparison using offsets from
+-- the Trifacta PREV() and NEXT() functions 
 union with: RS Clean 
 mapping: 
   {'as': 'Company', 'sources': current_dataset.Company,RS Clean.Company},
@@ -310,10 +313,22 @@ sort order: Product
 sort order: -Product
 sort order: Product
 derive type: multiple 
-value: PREV(Product, 1) order: Product as: 'prevProd'
-derive type: multiple value: NEXT(Product, 1) order: Product as: 'nextProd'
-derive type: single value: IF(nextProd == Product, 1, 0) as: 'match1'
-derive type: single value: IF(prevProd == Product, 1, 0) as: 'match2'
-move col: prevProd position: before before: nextProd
-derive type: single value: ADD(match1, match2) as: 'Matches'
-filter type: exactly col: Matches exactly: 1 action: Keep
+value: PREV(Product, 1) 
+order: Product as: 'prevProd'
+derive type: multiple 
+value: NEXT(Product, 1) 
+order: Product as: 'nextProd'
+derive type: single 
+value: IF(nextProd == Product, 1, 0) 
+as: 'match1'
+derive type: single 
+value: IF(prevProd == Product, 1, 0) 
+as: 'match2'
+move col: prevProd 
+position: before before: nextProd
+derive type: single 
+value: ADD(match1, match2) 
+as: 'Matches'
+filter type: exactly 
+col: Matches exactly: 1 
+action: Keep
