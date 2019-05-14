@@ -1,18 +1,47 @@
 //Check for data types
-settype col: ShipPostalCode type: String
-settype col: OrderID type: Integer
+settype col: ShipPostalCode 
+type: String
+
+settype col: OrderID 
+type: Integer
+
 //Check for case conditions
-textformat col: ShipCity type: propercase
+textformat col: ShipCity 
+type: propercase
+
 //Check for missing values
 sort order: -ShipPostalCode
-replacemissing col: ShipPostalCode with: custom text: 'T12'
-derive type: single value: IF(ShipCountry == 'USA', ShipPostalCode, '') as: 'US_PostalCode'
-lookup with: Lkup_US_Zips_States.csv col: current_dataset.US_PostalCode key: Lkup_US_Zips_States.csv.zip
-derive type: single value: CASE([AND(ShipRegion == '', ShipCountry == 'USA'),state_id,AND(ShipRegion == '', ShipCountry != 'USA'),ShipCity,ShipRegion]) as: 'newShipRegion'
-drop col: ShipRegion,US_PostalCode,state_id action: Drop
-rename type: manual mapping: [newShipRegion,'ShipRegion']
+replacemissing col: ShipPostalCode 
+with: custom text: 'T12'
+
+derive type: single 
+value: IF(ShipCountry == 'USA', ShipPostalCode, '') 
+as: 'US_PostalCode'
+
+lookup with: Lkup_US_Zips_States.csv 
+col: current_dataset.US_PostalCode 
+key: Lkup_US_Zips_States.csv.zip
+
+derive type: single 
+value: CASE([ AND(ShipRegion == '', ShipCountry == 'USA'), state_id, 
+              AND(ShipRegion == '', ShipCountry != 'USA'), ShipCity,
+                  ShipRegion]) 
+as: 'newShipRegion'
+
+drop col: ShipRegion, US_PostalCode, state_id 
+action: Drop
+rename type: manual 
+mapping: [newShipRegion,'ShipRegion']
+
 //Check for additional transformations
-textformat col: ShipCountry type: uppercase
-lookup with: Lkup_CountryCodes.csv col: current_dataset.ShipCountry key: Lkup_CountryCodes.csv.column2
-rename type: manual mapping: [column3,'CountryCode']
+textformat col: ShipCountry 
+type: uppercase
+
+lookup with: Lkup_CountryCodes.csv 
+col: current_dataset.ShipCountry 
+key: Lkup_CountryCodes.csv.column2
+
+rename type: manual 
+mapping: [column3,'CountryCode']
+
 //Check for additional conditions or issues
