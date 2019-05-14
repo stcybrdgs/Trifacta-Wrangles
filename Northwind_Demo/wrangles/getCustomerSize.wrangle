@@ -1,0 +1,38 @@
+//aggregate table to the OrderID level
+derive type: multiple 
+value: ROUND(SUM(LineItemRevenue), 2) 
+group: OrderID 
+as: 'AggLIR'
+
+// group cols to create roll up
+groupby group: OrderID,CustomerID,OrderDate,AggLIR 
+type: agg
+
+sort order: OrderID,CustomerID,OrderDate,AggLIR
+
+//use binning feature to compute CustomerSize
+bin options: equalBins 
+col: AggLIR 
+bins: 4 
+as: 'CustomerSize_EqualBins'
+
+sort order: -CustomerSize_EqualBins
+bin options: customBins 
+col: AggLIR 
+bins: 2 
+binValues: 2000,5000,10000,20000 
+default: 0 
+as: 'CustomerSize_CustomBins'
+
+case condition: columnConditions 
+col: CustomerSize_EqualBins 
+colCases: [0,'Small'],[1,'Medium'],[2,'Large'],[3,'ExtraLarge'] 
+default: 'Small' as: 'AutoCustSizeEqual'
+
+derive type: single 
+value: YEAR(OrderDate) 
+as: 'year_OrderDate'
+
+derive type: single 
+value: MONTH(OrderDate) 
+as: 'month_OrderDate'
